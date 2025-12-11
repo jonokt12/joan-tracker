@@ -2,8 +2,17 @@
 .direnv
 .envrc
 .pre-commit-config.yaml
+.mcp.json
 
+# Data files
 data/
+data.json
+
+# Node.js
+node_modules/
+
+# Nix build result
+result
 
 # History files
 .Rlib

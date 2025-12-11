@@ -317,9 +317,14 @@ app.get('/', (req, res) => {
       </tbody>
     </table>
 
-    <h2>Study Time Over Time</h2>
+    <h2>Running Totals Over Time</h2>
     <div class="chart-container">
       <canvas id="studyChart"></canvas>
+    </div>
+
+    <h2>Daily Averages Over Time</h2>
+    <div class="chart-container">
+      <canvas id="averageChart"></canvas>
     </div>
   </div>
 
@@ -504,7 +509,166 @@ app.get('/', (req, res) => {
       }
     }
 
+    // Load average chart data
+    async function loadAverageChart() {
+      try {
+        const response = await fetch('/api/data');
+        const data = await response.json();
+
+        if (data.entries.length === 0) {
+          return;
+        }
+
+        // Aggregate entries by date (sum all entries for the same date)
+        const dailyTotals = {};
+        data.entries.forEach(entry => {
+          if (!dailyTotals[entry.date]) {
+            dailyTotals[entry.date] = {
+              textbook: 0,
+              podcast: 0,
+              notes: 0,
+              flashcards: 0,
+              practice: 0
+            };
+          }
+          dailyTotals[entry.date].textbook += entry.textbook || 0;
+          dailyTotals[entry.date].podcast += entry.podcast || 0;
+          dailyTotals[entry.date].notes += entry.notes || 0;
+          dailyTotals[entry.date].flashcards += entry.flashcards || 0;
+          dailyTotals[entry.date].practice += entry.practice || 0;
+        });
+
+        // Sort dates and create array of daily totals
+        const dates = Object.keys(dailyTotals).sort((a, b) => new Date(a) - new Date(b));
+
+        // Calculate running averages (cumulative total / number of unique days)
+        let runningAverages = {
+          textbook: [],
+          podcast: [],
+          notes: [],
+          flashcards: [],
+          practice: [],
+          total: []
+        };
+
+        let cumulativeTextbook = 0;
+        let cumulativePodcast = 0;
+        let cumulativeNotes = 0;
+        let cumulativeFlashcards = 0;
+        let cumulativePractice = 0;
+
+        dates.forEach((date, index) => {
+          const dayCount = index + 1;
+          const dayData = dailyTotals[date];
+
+          cumulativeTextbook += dayData.textbook;
+          cumulativePodcast += dayData.podcast;
+          cumulativeNotes += dayData.notes;
+          cumulativeFlashcards += dayData.flashcards;
+          cumulativePractice += dayData.practice;
+
+          runningAverages.textbook.push((cumulativeTextbook / dayCount).toFixed(1));
+          runningAverages.podcast.push((cumulativePodcast / dayCount).toFixed(1));
+          runningAverages.notes.push((cumulativeNotes / dayCount).toFixed(1));
+          runningAverages.flashcards.push((cumulativeFlashcards / dayCount).toFixed(1));
+          runningAverages.practice.push((cumulativePractice / dayCount).toFixed(1));
+
+          const totalAverage = (
+            (cumulativeTextbook + cumulativePodcast + cumulativeNotes +
+            cumulativeFlashcards + cumulativePractice) / dayCount
+          ).toFixed(1);
+          runningAverages.total.push(totalAverage);
+        });
+
+        const labels = dates;
+
+        const ctx = document.getElementById('averageChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Total',
+                data: runningAverages.total,
+                borderColor: '#2c3e50',
+                backgroundColor: 'rgba(44, 62, 80, 0.1)',
+                borderWidth: 3,
+                tension: 0.1
+              },
+              {
+                label: 'Textbook',
+                data: runningAverages.textbook,
+                borderColor: '#3498db',
+                borderWidth: 2,
+                tension: 0.1
+              },
+              {
+                label: 'Podcast',
+                data: runningAverages.podcast,
+                borderColor: '#e74c3c',
+                borderWidth: 2,
+                tension: 0.1
+              },
+              {
+                label: 'Notes',
+                data: runningAverages.notes,
+                borderColor: '#2ecc71',
+                borderWidth: 2,
+                tension: 0.1
+              },
+              {
+                label: 'Flashcards',
+                data: runningAverages.flashcards,
+                borderColor: '#f39c12',
+                borderWidth: 2,
+                tension: 0.1
+              },
+              {
+                label: 'Practice',
+                data: runningAverages.practice,
+                borderColor: '#9b59b6',
+                borderWidth: 2,
+                tension: 0.1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              title: {
+                display: true,
+                text: 'Daily Average Minutes by Category'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Minutes per Day (Average)'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Date'
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error loading average chart:', error);
+      }
+    }
+
     loadChart();
+    loadAverageChart();
   </script>
 </body>
 </html>`;
