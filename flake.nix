@@ -42,6 +42,7 @@
               cp -r node_modules $out/lib/
               cp server.js $out/lib/
               cp package.json $out/lib/
+              cp index.html $out/lib/
 
               # Create a wrapper script
               cat > $out/bin/joan-flash <<EOF
