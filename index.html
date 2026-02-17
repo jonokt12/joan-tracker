@@ -265,6 +265,16 @@
         <label for="practice">Practice Questions (minutes):</label>
         <input type="number" id="practice" name="practice" min="0" max="1440" value="0">
       </div>
+      
+      <div class="form-group">
+        <label for="inperson">In-person teaching (minutes):</label>
+        <input type="number" id="inperson" name="inperson" min="0" max="1440" value="0">
+      </div>      
+
+      <div class="form-group">
+        <label for="lecture">Recorded lecture (minutes):</label>
+        <input type="number" id="lecture" name="lecture" min="0" max="1440" value="0">
+      </div>     
 
       <button type="submit">Submit Study Time</button>
     </form>
@@ -304,6 +314,16 @@
           <td>{{TOTAL_PRACTICE}}</td>
           <td>{{PERCENT_PRACTICE}}%</td>
         </tr>
+        <tr>
+          <td>In-person teaching</td>
+          <td>{{TOTAL_INPERSON}}</td>
+          <td>{{PERCENT_INPERSON}}%</td>
+        </tr>
+        <tr>
+          <td>Recorded lecture watching</td>
+          <td>{{TOTAL_LECTURE}}</td>
+          <td>{{PERCENT_LECTURE}}%</td>
+        </tr>                
         <tr style="font-weight: bold; background: #f8f9fa;">
           <td>Total</td>
           <td>{{GRAND_TOTAL}}</td>
@@ -414,7 +434,9 @@
         podcast: parseInt(document.getElementById('podcast').value) || 0,
         notes: parseInt(document.getElementById('notes').value) || 0,
         flashcards: parseInt(document.getElementById('flashcards').value) || 0,
-        practice: parseInt(document.getElementById('practice').value) || 0
+        practice: parseInt(document.getElementById('practice').value) || 0,
+        inperson: parseInt(document.getElementById('inperson').value) || 0,
+        lecture: parseInt(document.getElementById('lecture').value) || 0
       };
 
       try {
@@ -466,7 +488,9 @@
               podcast: 0,
               notes: 0,
               flashcards: 0,
-              practice: 0
+              practice: 0,
+              inperson: 0,
+              lecture: 0
             };
           }
           dailyTotals[entry.date].textbook += entry.textbook || 0;
@@ -474,6 +498,8 @@
           dailyTotals[entry.date].notes += entry.notes || 0;
           dailyTotals[entry.date].flashcards += entry.flashcards || 0;
           dailyTotals[entry.date].practice += entry.practice || 0;
+          dailyTotals[entry.date].inperson += entry.inperson || 0;
+          dailyTotals[entry.date].lecture += entry.lecture || 0;
         });
 
         // Sort dates
@@ -485,9 +511,12 @@
         const notesData = dates.map(date => dailyTotals[date].notes);
         const flashcardsData = dates.map(date => dailyTotals[date].flashcards);
         const practiceData = dates.map(date => dailyTotals[date].practice);
+        const inpersonData = dates.map(date => dailyTotals[date].inperson);
+        const lectureData = dates.map(date => dailyTotals[date].lecture);
         const totalData = dates.map(date =>
           dailyTotals[date].textbook + dailyTotals[date].podcast +
           dailyTotals[date].notes + dailyTotals[date].flashcards +
+          dailyTotals[date].inperson + dailyTotals[date].lecture +
           dailyTotals[date].practice
         );
 
@@ -536,6 +565,20 @@
               {
                 label: 'Practice',
                 data: practiceData,
+                borderColor: '#9b59b6',
+                borderWidth: 2,
+                tension: 0.1
+              }
+              {
+                label: 'In-person',
+                data: inpersonData,
+                borderColor: '#9b59b6',
+                borderWidth: 2,
+                tension: 0.1
+              }
+              {
+                label: 'Lecture',
+                data: lectureData,
                 borderColor: '#9b59b6',
                 borderWidth: 2,
                 tension: 0.1
@@ -595,7 +638,9 @@
               podcast: 0,
               notes: 0,
               flashcards: 0,
-              practice: 0
+              practice: 0,
+              inperson: 0,
+              lecture: 0
             };
           }
           dailyTotals[entry.date].textbook += entry.textbook || 0;
@@ -603,6 +648,8 @@
           dailyTotals[entry.date].notes += entry.notes || 0;
           dailyTotals[entry.date].flashcards += entry.flashcards || 0;
           dailyTotals[entry.date].practice += entry.practice || 0;
+          dailyTotals[entry.date].inperson += entry.inperson || 0;
+          dailyTotals[entry.date].lecture += entry.lecture || 0;
         });
 
         // Sort dates
@@ -615,6 +662,8 @@
           notes: [],
           flashcards: [],
           practice: [],
+          inperson: [],
+          lecture: [],
           total: []
         };
 
@@ -623,6 +672,8 @@
         let cumulativeNotes = 0;
         let cumulativeFlashcards = 0;
         let cumulativePractice = 0;
+        let cumulativeInperson = 0;
+        let cumulativeLecture = 0;
 
         dates.forEach((date) => {
           const dayData = dailyTotals[date];
@@ -632,15 +683,19 @@
           cumulativeNotes += dayData.notes;
           cumulativeFlashcards += dayData.flashcards;
           cumulativePractice += dayData.practice;
+          cumulativeInperson += dayData.inperson;
+          cumulativeLecture += dayData.lecture;
 
           runningTotals.textbook.push(cumulativeTextbook);
           runningTotals.podcast.push(cumulativePodcast);
           runningTotals.notes.push(cumulativeNotes);
           runningTotals.flashcards.push(cumulativeFlashcards);
           runningTotals.practice.push(cumulativePractice);
+          runningTotals.inperson.push(cumulativeInperson);
+          runningTotals.lecture.push(cumulativeLecture);
           runningTotals.total.push(
             cumulativeTextbook + cumulativePodcast + cumulativeNotes +
-            cumulativeFlashcards + cumulativePractice
+            cumulativeFlashcards + cumulativePractice + cumulativeInperson + cumulativeLecture
           );
         });
 
@@ -689,6 +744,20 @@
               {
                 label: 'Practice',
                 data: runningTotals.practice,
+                borderColor: '#9b59b6',
+                borderWidth: 2,
+                tension: 0.1
+              }
+              {
+                label: 'In-person',
+                data: runningTotals.inperson,
+                borderColor: '#9b59b6',
+                borderWidth: 2,
+                tension: 0.1
+              }
+              {
+                label: 'Lectures',
+                data: runningTotals.lecture,
                 borderColor: '#9b59b6',
                 borderWidth: 2,
                 tension: 0.1
