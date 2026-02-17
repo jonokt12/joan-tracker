@@ -86,6 +86,8 @@ function calculateStats(entries) {
     notes: 0,
     flashcards: 0,
     practice: 0
+    inperson: 0,
+    lecture: 0
   };
 
   entries.forEach(entry => {
@@ -94,6 +96,8 @@ function calculateStats(entries) {
     totals.notes += entry.notes || 0;
     totals.flashcards += entry.flashcards || 0;
     totals.practice += entry.practice || 0;
+    totals.inperson += entry.inperson || 0;
+    totals.lecture += entry.lecture || 0;
   });
 
   const grandTotal = Object.values(totals).reduce((sum, val) => sum + val, 0);
@@ -139,11 +143,15 @@ app.get('/', (req, res) => {
     .replace('{{TOTAL_NOTES}}', stats.totals.notes)
     .replace('{{TOTAL_FLASHCARDS}}', stats.totals.flashcards)
     .replace('{{TOTAL_PRACTICE}}', stats.totals.practice)
+    .replace('{{TOTAL_INPERSON}}', stats.totals.inperson)
+    .replace('{{TOTAL_LECTURE}}', stats.totals.lecture)
     .replace('{{PERCENT_TEXTBOOK}}', stats.percentages.textbook || 0)
     .replace('{{PERCENT_PODCAST}}', stats.percentages.podcast || 0)
     .replace('{{PERCENT_NOTES}}', stats.percentages.notes || 0)
     .replace('{{PERCENT_FLASHCARDS}}', stats.percentages.flashcards || 0)
     .replace('{{PERCENT_PRACTICE}}', stats.percentages.practice || 0)
+    .replace('{{PERCENT_INPERSON}}', stats.percentages.inperson || 0)
+    .replace('{{PERCENT_LECTURE}}', stats.percentages.lecture || 0)
     .replace('{{GRAND_TOTAL}}', stats.grandTotal);
 
   res.send(html);
@@ -151,7 +159,7 @@ app.get('/', (req, res) => {
 
 // Submit study time
 app.post('/submit', (req, res) => {
-  const { date, textbook, podcast, notes, flashcards, practice } = req.body;
+  const { date, textbook, podcast, notes, flashcards, practice, inperson, lecture } = req.body;
 
   // Validation
   if (!date) {
@@ -165,6 +173,8 @@ app.post('/submit', (req, res) => {
     notes: parseInt(notes) || 0,
     flashcards: parseInt(flashcards) || 0,
     practice: parseInt(practice) || 0,
+    inperson: parseInt(inperson) || 0,
+    lecture: parseInt(lecture) || 0,
     timestamp: new Date().toISOString()
   };
 
